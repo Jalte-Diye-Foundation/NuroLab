@@ -4,10 +4,12 @@
 
 ## Awareness & Outreach
 
-<img width="560" alt="Gemini_Generated_Image_xzhvbxzhvbxzhvbx"   src="https://github.com/Jalte-Diye-Foundation/NuroLab/blob/main/images/Nurolab.png" />
+<img width="1280" alt="Nurolab awareness"   src="https://github.com/Jalte-Diye-Foundation/NuroLab/blob/main/images/Nurolab.png" />
 ---
 
 ## Overview
+
+<img width="1280" alt="Poster for Nurolab" src="https://github.com/Jalte-Diye-Foundation/NuroLab/blob/main/images/Nurolab_poster.png" />
 
 **Nurolab** is an interdisciplinary initiative focused on developing intelligent systems for understanding cognitive and mental well-being through **Electroencephalography (EEG)**, **Artificial Intelligence (AI)**, and **Human-Centered Technology**.
 
@@ -175,6 +177,15 @@ It is important to recognize that:
 * Personalized cognitive wellness platforms
 * Explainable AI for neuroscience
 * Collaboration with healthcare and research institutions
+
+---
+
+## 📚 Documentation
+
+- [Roadmap](docs/roadmap.md)
+- [Architecture](docs/architecture.md)
+- [Datasets](docs/datasets.md)
+- [Research Plan](docs/research-plan.md)
 
 ---
 
