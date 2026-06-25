@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Trained models — regenerate locally, too large for git
+models/*.pkl
+models/*.npz
+
+# Raw EEG data — too large + OpenNeuro license
+data/*.bdf
+data/*.set
+data/*.fdt
+data/ds003478/
+data/bonn_eeg/
+
+# Keep these (small processing scripts, needed by pipeline)
+!data/processing/
+!data/processing/__init__.py
+!data/processing/blink_remover.py
+!data/features/
+!data/features/__init__.py
+!data/features/extractor.py
+
+# OS junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
