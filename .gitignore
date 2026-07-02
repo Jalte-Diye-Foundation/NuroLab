@@ -7,24 +7,23 @@ venv/
 .env
 
 # Raw EEG data — too large + OpenNeuro license
-data/*.bdf
-data/*.set
-data/*.fdt
-data/ds003478/
-data/bonn_eeg/
+nurolab/data/*.bdf
+nurolab/data/*.set
+nurolab/data/*.fdt
+nurolab/data/ds003478/
+nurolab/data/bonn_eeg/
 
 # Keep these (small processing scripts, needed by pipeline)
-!data/processing/
-!data/processing/__init__.py
-!data/processing/blink_remover.py
-!data/features/
-!data/features/__init__.py
-!data/features/extractor.py
+!nurolab/data/processing/
+!nurolab/data/processing/__init__.py
+!nurolab/data/processing/blink_remover.py
+!nurolab/data/features/
+!nurolab/data/features/__init__.py
+!nurolab/data/features/extractor.py
 
 # OS junk
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
-*.log"nurolab/data/bonn_eeg/" 
-nurolab/data/bonn_eeg/
+*.log
