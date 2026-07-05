@@ -1,0 +1,54 @@
+﻿.\gradlew.bat : WARNING: A restricted method in java.lang.System has been called
+At C:\Users\HP\AppData\Local\Temp\ps-script-eb9bf966-2b1e-43e6-920a-3eaa07fdaad3.ps1:117 char:45
++ ... b\android"; .\gradlew.bat :app:compileDebugKotlin --no-daemon --info  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: A rest...has been called:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an 
+unnamed module (file:/C:/Users/HP/AppData/Local/Temp/cursor-sandbox-cache/6fe44176a9c5fd77546782f9d689098f/gradle/wrapp
+er/dists/gradle-8.13-bin/5xuhj0ry160q40clulazy9h7d/gradle-8.13/lib/native-platform-0.22-milestone-28.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+Initialized native services in: C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\native
+Initialized jansi services in: C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\native
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Starting process 'Gradle build daemon'. Working directory: C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\daemon\8.13 Command: C:\Program Files\Java\jdk-26\bin\java.exe --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -Xmx1536m -Dfile.encoding=UTF-8 -Duser.country=IN -Duser.language=en -Duser.variant -cp C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13\lib\gradle-daemon-main-8.13.jar -javaagent:C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13\lib\agents\gradle-instrumentation-agent-8.13.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.13
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.329 secs.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Unable to start the daemon process.
+This problem might be caused by incorrect configuration of the daemon.
+For example, an unrecognized jvm option is used.For more details on the daemon, please refer to 
+https://docs.gradle.org/8.13/userguide/gradle_daemon.html in the Gradle documentation.
+Process command line: C:\Program Files\Java\jdk-26\bin\java.exe --add-opens=java.base/java.lang=ALL-UNNAMED 
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED 
+--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED 
+--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED 
+--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED 
+--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED 
+--add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -Xmx1536m -Dfile.encoding=UTF-8 -Duser.country=IN 
+-Duser.language=en -Duser.variant -cp C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d6890
+98f\gradle\wrapper\dists\gradle-8.13-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13\lib\gradle-daemon-main-8.13.jar -javaage
+nt:C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\wrapper\dists\gradle-8.1
+3-bin\5xuhj0ry160q40clulazy9h7d\gradle-8.13\lib\agents\gradle-instrumentation-agent-8.13.jar 
+org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.13
+Please read the following process output to find out more:
+-----------------------
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 1048576 bytes. Error detail: AllocateHeap
+# An error report file with more information is saved as:
+# C:\Users\HP\AppData\Local\Temp\cursor-sandbox-cache\6fe44176a9c5fd77546782f9d689098f\gradle\daemon\8.13\hs_err_pid189
+12.log
+
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.

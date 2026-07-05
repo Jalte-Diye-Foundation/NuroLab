@@ -1,0 +1,170 @@
+<resources>
+    <string name="app_name">Cereqon</string>
+    <string name="welcome_tagline">Clarity in every signal.</string>
+    <string name="welcome_server_url_label">Server URL</string>
+    <string name="welcome_server_url_hint">http://10.0.2.2:8000/</string>
+    <string name="welcome_test_connection">Test connection</string>
+    <string name="welcome_continue">Continue</string>
+    <string name="welcome_setup_complete">Setup complete</string>
+    <string name="welcome_connection_idle">Connect to your Cereqon backend to begin.</string>
+    <string name="welcome_connection_checking">Checking server…</string>
+    <string name="welcome_connection_success">Connected · v%1$s</string>
+    <string name="welcome_connection_error">Connection failed</string>
+    <string name="welcome_foundation">Jalte Diye Foundation</string>
+
+    <string name="calibration_title">Personal baseline</string>
+    <string name="calibration_subtitle">Five minutes of relaxed, still recording builds your personal brain signal baseline.</string>
+    <string name="calibration_intro_heading">Before you begin</string>
+    <string name="calibration_intro_body">Sit comfortably, minimize movement, and breathe normally. Cereqon connects to the live stream, collects feature windows for five minutes, then uploads your baseline to the server.</string>
+    <string name="calibration_start">Start calibration</string>
+    <string name="calibration_time_remaining">Time remaining</string>
+    <string name="calibration_windows_collected">Windows collected: %1$d</string>
+    <string name="calibration_relax_hint">Stay relaxed and still while calibration runs.</string>
+    <string name="calibration_status_connecting">Connecting to live stream…</string>
+    <string name="calibration_status_warmup">Stream warming up (~20 s)…</string>
+    <string name="calibration_status_collecting">Collecting baseline windows…</string>
+    <string name="calibration_status_reconnecting">Reconnecting to live stream…</string>
+    <string name="calibration_submitting">Building baseline…</string>
+    <string name="calibration_submitting_detail">Uploading %1$d windows to the server.</string>
+    <string name="calibration_success_title">Baseline ready</string>
+    <string name="calibration_success_detail">Personal baseline built from %1$d windows. Opening dashboard…</string>
+    <string name="calibration_error_title">Calibration failed</string>
+    <string name="calibration_error_generic">Something went wrong during calibration.</string>
+    <string name="calibration_retry">Try again</string>
+
+    <string name="dashboard_title">Live dashboard</string>
+    <string name="dashboard_subtitle">Live backend stream over WebSocket — raw values only.</string>
+
+    <string name="dashboard_card_connection">Connection</string>
+    <string name="dashboard_card_risk">Risk</string>
+    <string name="dashboard_card_predictions">Predictions</string>
+    <string name="dashboard_card_feature_vector">Feature vector</string>
+    <string name="dashboard_card_backend_status">Backend status</string>
+
+    <string name="dashboard_status_disconnected">Disconnected</string>
+    <string name="dashboard_status_connecting">Connecting</string>
+    <string name="dashboard_status_connected">Connected</string>
+    <string name="dashboard_status_warmup">Warmup</string>
+    <string name="dashboard_status_streaming">Streaming</string>
+    <string name="dashboard_status_reconnecting">Reconnecting</string>
+    <string name="dashboard_status_failed">Failed</string>
+
+    <string name="dashboard_stream_error_generic">Unable to maintain the live stream connection.</string>
+    <string name="dashboard_retry_connection">Reconnect stream</string>
+
+    <string name="dashboard_risk_unavailable">No deviation block in the latest window.</string>
+    <string name="dashboard_risk_mahalanobis">Mahalanobis distance</string>
+    <string name="dashboard_risk_tier">Risk tier</string>
+    <string name="dashboard_risk_explanations">Deviation explanations</string>
+
+    <string name="dashboard_predictions_empty">{ }</string>
+    <string name="dashboard_prediction_confidence">%1$s · confidence %2$s</string>
+    <string name="dashboard_prediction_error">error: %1$s</string>
+
+    <string name="dashboard_feature_unavailable">Waiting for the first window payload…</string>
+    <string name="dashboard_feature_window_start">window_start_time</string>
+    <string name="dashboard_feature_window_end">window_end_time</string>
+    <string name="dashboard_feature_count">feature_vector length</string>
+    <string name="dashboard_feature_first">First feature</string>
+    <string name="dashboard_feature_last">Last feature</string>
+
+    <string name="dashboard_backend_server_url">Server URL</string>
+    <string name="dashboard_backend_connection">Connection</string>
+    <string name="dashboard_backend_last_update">Last update time</string>
+    <string name="dashboard_backend_url_unknown">—</string>
+    <string name="dashboard_backend_last_update_none">—</string>
+
+    <string name="dashboard_chart_risk_tier">Risk tier timeline</string>
+    <string name="dashboard_chart_mahalanobis">Mahalanobis timeline</string>
+    <string name="dashboard_chart_feature">Feature timeline</string>
+    <string name="dashboard_chart_no_data">No timeline data yet.</string>
+    <string name="dashboard_chart_points">%1$d / %2$d updates</string>
+    <string name="dashboard_chart_content_description">%1$s chart with %2$d data points</string>
+
+    <string name="dashboard_connection_content_description">Connection status: %1$s</string>
+
+    <string name="dashboard_quality_label">Connection quality</string>
+    <string name="dashboard_quality_unknown">Unknown</string>
+    <string name="dashboard_quality_excellent">Excellent</string>
+    <string name="dashboard_quality_good">Good</string>
+    <string name="dashboard_quality_degraded">Degraded</string>
+    <string name="dashboard_quality_poor">Poor</string>
+    <string name="dashboard_quality_offline">Offline</string>
+    <string name="dashboard_quality_content_description">Connection quality: %1$s</string>
+
+    <string name="dashboard_packet_timer_label">Last packet</string>
+    <string name="dashboard_packet_timer_none">No packets yet</string>
+    <string name="dashboard_packet_timer_just_now">Just now</string>
+    <string name="dashboard_packet_timer_ago">%1$d s ago</string>
+    <string name="dashboard_packet_timer_content_description">Last packet received %1$s</string>
+
+    <string name="dashboard_auto_reconnect_label">Auto reconnect</string>
+    <string name="dashboard_auto_reconnect_attempt">Attempt %1$d</string>
+    <string name="dashboard_auto_reconnect_content_description">Auto reconnecting, attempt %1$d</string>
+
+    <string name="dashboard_predictions_empty_description">No predictions in the latest window</string>
+
+    <string name="insights_title">Insights</string>
+    <string name="insights_subtitle">Stored session history from Room — read-only, no analytics.</string>
+    <string name="insights_live_session_title">Active session</string>
+    <string name="insights_stored_session_title">Stored session</string>
+    <string name="insights_active_session">Active session</string>
+    <string name="insights_session_duration">Session duration</string>
+    <string name="insights_window_count">Window count</string>
+    <string name="insights_connection_status">Connection status</string>
+    <string name="insights_calibration_status">Calibration status</string>
+    <string name="insights_last_update">Last update time</string>
+    <string name="insights_calibration_yes">Calibrated at session start</string>
+    <string name="insights_calibration_no">Not calibrated at session start</string>
+    <string name="insights_session_summary">Session %1$d · started %2$s</string>
+    <string name="insights_no_session">No active session in Room.</string>
+    <string name="insights_retry">Retry</string>
+    <string name="insights_connection_offline_no_cache">%1$s · offline (no cache)</string>
+    <string name="insights_connection_offline_with_cache">%1$s · offline (cache %2$s)</string>
+    <string name="insights_history_title">Session history</string>
+    <string name="insights_history_empty">No sessions cached from Room yet.</string>
+    <string name="insights_history_live_item">Current session</string>
+    <string name="insights_history_live_detail">Live Room-backed session</string>
+    <string name="insights_history_session_item">Session %1$d</string>
+    <string name="insights_history_session_started">Started %1$s</string>
+    <string name="insights_history_session_range">%1$s → %2$s</string>
+    <string name="insights_session_unavailable">Stored session data is not available.</string>
+
+    <string name="reports_title">Reports</string>
+    <string name="reports_subtitle">Stored report metadata from Room — read-only, no export generation.</string>
+    <string name="reports_history_title">Report history</string>
+    <string name="reports_history_empty">No reports stored in Room yet.</string>
+    <string name="reports_report_date">Report date</string>
+    <string name="reports_session_reference">Session reference</string>
+    <string name="reports_session_reference_value">Session %1$d</string>
+    <string name="reports_session_reference_unknown">Not linked</string>
+    <string name="reports_export_status">Export status</string>
+    <string name="reports_export_status_exported">Exported</string>
+    <string name="reports_export_status_pending">Pending</string>
+    <string name="reports_format_label">Format</string>
+    <string name="reports_report_item_title">Report %1$d</string>
+    <string name="reports_retry">Retry</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_subtitle">Server connection, appearance, and app information.</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_server_section">Server</string>
+    <string name="settings_server_url_label">Server URL</string>
+    <string name="settings_save_server_url">Save server URL</string>
+    <string name="settings_server_url_saved">Server URL saved.</string>
+    <string name="settings_theme_section">Theme</string>
+    <string name="settings_theme_description">Choose light, dark, or follow the system setting.</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_about_section">About Cereqon</string>
+    <string name="settings_about_body">Cereqon is a real-time mental wellness monitoring client for the Jalte Diye Foundation EEG platform. Clarity in every signal.</string>
+    <string name="settings_app_version">App version</string>
+    <string name="settings_backend_version">Backend version</string>
+    <string name="settings_backend_version_unavailable">Unavailable</string>
+    <string name="settings_retry">Retry</string>
+    <string name="settings_privacy_section">Privacy</string>
+    <string name="settings_privacy_description">Review how Cereqon handles your data.</string>
+    <string name="settings_privacy_policy_link">Privacy policy</string>
+    <string name="settings_privacy_policy_url">https://www.jaltediye.org/privacy</string>
+</resources>

@@ -1,0 +1,18 @@
+[
+  "Fp1_delta_DE", "Fp1_theta_DE", "Fp1_alpha_DE", "Fp1_beta_DE", "Fp1_gamma_DE",
+  "Fp1_hjorth_activity", "Fp1_hjorth_mobility", "Fp1_hjorth_complexity",
+  "Fp2_delta_DE", "Fp2_theta_DE", "Fp2_alpha_DE", "Fp2_beta_DE", "Fp2_gamma_DE",
+  "Fp2_hjorth_activity", "Fp2_hjorth_mobility", "Fp2_hjorth_complexity",
+  "F3_delta_DE", "F3_theta_DE", "F3_alpha_DE", "F3_beta_DE", "F3_gamma_DE",
+  "F3_hjorth_activity", "F3_hjorth_mobility", "F3_hjorth_complexity",
+  "F4_delta_DE", "F4_theta_DE", "F4_alpha_DE", "F4_beta_DE", "F4_gamma_DE",
+  "F4_hjorth_activity", "F4_hjorth_mobility", "F4_hjorth_complexity",
+  "T7_delta_DE", "T7_theta_DE", "T7_alpha_DE", "T7_beta_DE", "T7_gamma_DE",
+  "T7_hjorth_activity", "T7_hjorth_mobility", "T7_hjorth_complexity",
+  "T8_delta_DE", "T8_theta_DE", "T8_alpha_DE", "T8_beta_DE", "T8_gamma_DE",
+  "T8_hjorth_activity", "T8_hjorth_mobility", "T8_hjorth_complexity",
+  "O1_delta_DE", "O1_theta_DE", "O1_alpha_DE", "O1_beta_DE", "O1_gamma_DE",
+  "O1_hjorth_activity", "O1_hjorth_mobility", "O1_hjorth_complexity",
+  "O2_delta_DE", "O2_theta_DE", "O2_alpha_DE", "O2_beta_DE", "O2_gamma_DE",
+  "O2_hjorth_activity", "O2_hjorth_mobility", "O2_hjorth_complexity"
+]

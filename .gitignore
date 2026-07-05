@@ -1,0 +1,25 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+app/build/
+**/build/
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.ap_
+*.aab
+output.json
+hs_err_pid*.log
+replay_pid*.log
+
+# Room schema exports (disabled in Phase 1)
+/schemas/
+
+# Release signing (never commit secrets)
+keystore.properties
+release-keystore.jks
+*.jks
