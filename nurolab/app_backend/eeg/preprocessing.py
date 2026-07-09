@@ -43,7 +43,7 @@ def bandpass_filter(
 def notch_filter(
     data: np.ndarray,
     fs: float,
-    freq_hz: float = 60.0,
+    freq_hz: float = 50.0,
     quality_factor: float = 30.0,
 ) -> np.ndarray:
     """IIR notch filter to remove mains-hum interference (50/60 Hz).
