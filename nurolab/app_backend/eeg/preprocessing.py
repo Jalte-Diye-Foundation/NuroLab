@@ -90,7 +90,7 @@ def normalize(data: np.ndarray, method: str = "zscore") -> np.ndarray:
 def preprocess_pipeline(
     data: np.ndarray,
     fs: float,
-    mains_hz: float = 60.0,
+    mains_hz: float = 50.0,
     band: tuple[float, float] = (1.0, 45.0),
 ) -> np.ndarray:
     """Full Stage-A preprocessing chain: notch -> bandpass -> normalize."""
