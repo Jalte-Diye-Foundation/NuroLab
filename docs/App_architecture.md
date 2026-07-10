@@ -1,103 +1,155 @@
-# Cereqon Android — Architecture
+# Nurolab System Architecture
 
-**Package:** `org.jaltediye.cereqon`  
-**Pattern:** Clean Architecture with MVVM presentation layer  
-**DI:** Dagger Hilt (`@HiltAndroidApp`, `@HiltViewModel`, `@Singleton`)
+## Overview
 
-## Layer overview
+Nurolab is an EEG Analytics & Visualization Platform designed to process, analyze, visualize, and interpret electroencephalography (EEG) data. The current version operates on public EEG datasets and is designed to support future integration with real EEG acquisition hardware.
 
+---
+
+# Current Architecture (Dataset-Based)
+
+```text
+EEG Dataset
+    ?
+Data Loader
+    ?
+Preprocessing Pipeline
+    ?
+Feature Extraction
+    ?
+Analytics Engine
+    ?
+Visualization Dashboard
+    ?
+Reports & Exports
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  presentation/   Compose screens, ViewModels, UI state      │
-├─────────────────────────────────────────────────────────────┤
-│  domain/         Models, repository interfaces (no Android)  │
-├─────────────────────────────────────────────────────────────┤
-│  data/           Repository impls, Room, Retrofit, WebSocket │
-├─────────────────────────────────────────────────────────────┤
-│  di/             Hilt modules (network, database, repos)    │
-└─────────────────────────────────────────────────────────────┘
+
+---
+
+# Functional Layers
+
+## 1. Data Layer
+
+Responsible for storing and managing EEG datasets.
+
+### Inputs
+
+* EDF files
+* CSV files
+* Public EEG datasets
+* Research datasets
+
+### Responsibilities
+
+* Dataset management
+* Metadata storage
+* Dataset versioning
+
+---
+
+## 2. Processing Layer
+
+Responsible for preparing EEG signals for analysis.
+
+### Components
+
+* Notch Filtering
+* Bandpass Filtering
+* Signal Segmentation
+* Normalization
+
+### Outputs
+
+* Clean EEG signals
+* Segmented EEG windows
+
+---
+
+## 3. Analytics Layer
+
+Responsible for extracting meaningful information.
+
+### Features
+
+* Delta Band Power
+* Theta Band Power
+* Alpha Band Power
+* Beta Band Power
+
+### Metrics
+
+* Alpha/Beta Ratio
+* Relaxation Index
+* Engagement Index
+* Signal Quality Score
+
+---
+
+## 4. Visualization Layer
+
+Provides interactive visual representations.
+
+### Components
+
+* EEG Waveform Viewer
+* Frequency Spectrum
+* Session Analytics
+* Trend Charts
+
+---
+
+## 5. Reporting Layer
+
+Generates research and user reports.
+
+### Outputs
+
+* PDF Reports
+* CSV Exports
+* Session Summaries
+
+---
+
+# Future Hardware Architecture
+
+The software architecture is designed to support future real-time EEG acquisition.
+
+```text
+EEG Headband
+      ?
+ADS1299 Signal Acquisition
+      ?
+ESP32 Edge Processing
+      ?
+Secure Wireless Upload
+      ?
+Cloud API Gateway
+      ?
+Database & Storage
+      ?
+Analytics Engine
+      ?
+Dashboard & Reports
 ```
 
-Dependency rule: **presentation → domain ← data**. Domain has no Android or framework imports.
+---
 
-## Modules
+# Design Principles
 
-| Module | Location | Responsibility |
-|--------|----------|----------------|
-| **Presentation** | `presentation/` | Jetpack Compose UI, `@HiltViewModel`, `StateFlow` UI state |
-| **Domain** | `domain/model/`, `domain/repository/` | Business models, repository contracts |
-| **Data** | `data/` | REST, WebSocket, Room, DataStore, mappers |
-| **DI** | `di/` | Hilt `@Provides` / `@Binds` wiring |
-| **Navigation** | `navigation/` | Route constants, `NavHost` graph |
+* Modular architecture
+* Hardware-independent design
+* Cloud-ready deployment
+* Research-focused workflows
+* Scalable analytics pipeline
 
-## Repository layer
+---
 
-| Interface | Implementation | Backing store |
-|-----------|----------------|---------------|
-| `HealthRepository` | `HealthRepositoryImpl` | Retrofit `GET /health` + in-memory cache |
-| `CalibrationRepository` | `CalibrationRepositoryImpl` | Retrofit calibration endpoints |
-| `LiveStreamRepository` | `LiveStreamRepositoryImpl` | `LiveStreamWebSocketManager` (OkHttp WS) |
-| `SettingsRepository` | `SettingsRepositoryImpl` | DataStore `cereqon_settings` + `ServerUrlStore` |
-| `InsightsRepository` | `InsightsRepositoryImpl` | Room `SessionDao`, `WindowSnapshotDao` |
+# Future Enhancements
 
-## Data sources
-
-| Source | Technology | Used by |
-|--------|------------|---------|
-| REST API | Retrofit + kotlinx.serialization | Health, Calibration |
-| Live stream | OkHttp WebSocket `/ws/live` | Dashboard (owner), Calibration (owner), Insights (read-only) |
-| Preferences | DataStore | Settings, onboarding flags |
-| Local cache | Room `cereqon.db` | Insights (sessions, window snapshots) |
-
-## WebSocket stream ownership
-
-`LiveStreamWebSocketManager` is a singleton. Exactly one feature ViewModel drives `start()` / `stop()` at a time.
-
-| Feature | Role | Calls `start()` / `stop()` | Persists to Room |
-|---------|------|---------------------------|------------------|
-| **Dashboard** | Stream owner during monitoring | Yes — init, refresh, `onCleared` | Yes — `recordWindowSnapshot` per window |
-| **Calibration** | Stream owner during baseline collection | Yes — calibration flow, `onCleared` | Yes — calibration session snapshots |
-| **Insights** | Read-only observer | **No** — observes `connectionState` only | **No** — reads Room via reactive `Flow` |
-
-Navigation `popUpTo { inclusive = true }` on onboarding prevents Dashboard and Calibration from coexisting. Insights does not compete for stream control.
-
-## Presentation features
-
-| Feature | Package | ViewModel | Primary repositories |
-|---------|---------|-----------|---------------------|
-| Welcome | `presentation/welcome/` | `WelcomeViewModel` | `HealthRepository`, `SettingsRepository` |
-| Calibration | `presentation/calibration/` | `CalibrationViewModel` | `LiveStreamRepository`, `CalibrationRepository`, `InsightsRepository` |
-| Dashboard | `presentation/dashboard/` | `DashboardViewModel` | `LiveStreamRepository`, `SettingsRepository`, `InsightsRepository` |
-| Insights | `presentation/insights/` | `InsightsViewModel` | `InsightsRepository`, `LiveStreamRepository` (observe), `SettingsRepository` |
-
-## Shared presentation primitives
-
-| Type | Package | Purpose |
-|------|---------|---------|
-| `LoadableUiState<T>` | `presentation/state/` | Idle / Loading / Success / Error for async content |
-| `OfflineUiState` | `presentation/state/` | Online / offline-with-cache / offline-no-cache |
-| `ConnectionUiState` | `presentation/state/` | Defined; not used in screens yet |
-| `ErrorUiState` | `presentation/state/` | Defined; not used in screens yet |
-
-## Application entry
-
-- `CereqonApp` — `@HiltAndroidApp`; preloads server URL on `IoDispatcher` at startup.
-- `MainActivity` — `@AndroidEntryPoint`; hosts `CereqonNavHost` inside `CereqonTheme`.
-
-## Design constraints
-
-- Backend contract is fixed (`nurolab/app_backend/server.py`); no client-side API invention.
-- Dashboard displays raw backend values only; no client analytics on the live path.
-- `BrainMetrics` exists in domain for future client-side computation; not used in Dashboard or Insights architecture.
-- Room schema includes `calibration_attempts` and `reports` tables; only session/window tables are wired through `InsightsRepository` today.
-
-## Phase status
-
-| Phase | Scope | Status |
-|-------|-------|--------|
-| 1 | Infrastructure, data layer, theme | Complete |
-| 2 | Rebrand + Welcome | Complete |
-| 3 | Calibration | Complete |
-| 4 | Dashboard (foundation → polish) | Complete |
-| 5A | Insights architecture (Room read path, no UI) | Partial |
-| 5B+ | Insights UI, Dashboard nav, Reports export | Planned |
+* Real-time EEG streaming
+* Edge AI inference
+* Multi-user support
+* Stress prediction
+* Attention monitoring
+* Sleep analytics
+* Mobile application support
