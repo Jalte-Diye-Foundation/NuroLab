@@ -2,9 +2,7 @@
 
 *Smart Mental Health Monitoring using EEG & Artificial Intelligence*
 
-## Awareness & Outreach
 
-<img width="1280" alt="Nurolab awareness"   src="https://github.com/Jalte-Diye-Foundation/NuroLab/blob/main/images/Nurolab.png" />
 ---
 
 ## Overview
@@ -207,6 +205,10 @@ We welcome contributions from:
 > "Advancing our understanding of the human mind through neuroscience, artificial intelligence, and responsible innovation."
 
 ---
+
+## Awareness & Outreach
+
+<img width="1280" alt="Nurolab awareness"   src="https://github.com/Jalte-Diye-Foundation/NuroLab/blob/main/images/Nurolab.png" />
 
 ## Disclaimer
 
