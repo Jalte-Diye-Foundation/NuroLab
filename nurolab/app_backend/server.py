@@ -6,7 +6,10 @@
 #
 # Install: pip install -r requirements.txt
 # See README.md for full setup instructions.
-
+from nurolab.processing.analytics import (
+    alpha_beta_ratio, engagement_index, relaxation_index,
+    cognitive_load_index, signal_quality_score
+)
 from __future__ import annotations
 
 import asyncio
@@ -252,6 +255,15 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                 de = analytics_service.compute_DE(filtered, EEG_SOURCE.fs)
 
                 current = {"alpha": de["alpha_de"], "beta": de["beta_de"], "theta": de["theta_de"]}
+                extra_metrics = {
+                    "delta_de": round(de["delta_de"], 4),
+                    "gamma_de": round(de["gamma_de"], 4),
+                    "alpha_beta_ratio": round(alpha_beta_ratio(de["alpha_de"], de["beta_de"]), 4),
+                    "engagement_index": round(engagement_index(de["beta_de"], de["alpha_de"], de["theta_de"]), 4),
+                    "relaxation_index": round(relaxation_index(de["alpha_de"], de["beta_de"]), 4),
+                    "cognitive_load": round(cognitive_load_index(de["theta_de"], de["alpha_de"]), 4),
+                    "signal_quality": round(signal_quality_score(filtered), 4),
+                }
 
                 if baseline is not None:
                     deviation_score = analytics_service.compute_deviation(current, baseline)
@@ -271,6 +283,7 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     "theta_de": round(de["theta_de"], 4),
                     "deviation_score": deviation_score,
                     "risk_tier": risk_tier,
+                    **extra_metrics,
                     **predictions,
                 }
 
