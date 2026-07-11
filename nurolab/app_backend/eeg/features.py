@@ -57,6 +57,13 @@ def beta_power(data: np.ndarray, fs: float) -> float:
 def theta_power(data: np.ndarray, fs: float) -> float:
     return band_power(data, fs, BANDS["theta"])
 
+def delta_power(data: np.ndarray, fs: float) -> float:
+    return band_power(data, fs, BANDS["delta"])
+
+
+def gamma_power(data: np.ndarray, fs: float) -> float:
+    return band_power(data, fs, BANDS["gamma"])
+
 
 def differential_entropy(power: float) -> float:
     """Differential entropy from band power, assuming Gaussian signal statistics.
@@ -71,17 +78,23 @@ def differential_entropy(power: float) -> float:
 
 
 def compute_band_de(data: np.ndarray, fs: float) -> dict[str, float]:
-    """Compute differential entropy for alpha/beta/theta bands for a single channel window."""
+    """Compute differential entropy for all 5 EEG bands for a single channel window."""
+    d_pow = delta_power(data, fs)
     a_pow = alpha_power(data, fs)
     b_pow = beta_power(data, fs)
     t_pow = theta_power(data, fs)
+    g_pow = gamma_power(data, fs)
     return {
+        "delta_power": d_pow,
         "alpha_power": a_pow,
         "beta_power": b_pow,
         "theta_power": t_pow,
+        "gamma_power": g_pow,
+        "delta_de": differential_entropy(d_pow),
         "alpha_de": differential_entropy(a_pow),
         "beta_de": differential_entropy(b_pow),
         "theta_de": differential_entropy(t_pow),
+        "gamma_de": differential_entropy(g_pow),
     }
 
 
