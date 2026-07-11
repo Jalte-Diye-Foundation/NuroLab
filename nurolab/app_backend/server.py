@@ -6,12 +6,12 @@
 #
 # Install: pip install -r requirements.txt
 # See README.md for full setup instructions.
+
+from __future__ import annotations
 from nurolab.processing.analytics import (
     alpha_beta_ratio, engagement_index, relaxation_index,
     cognitive_load_index, signal_quality_score
 )
-from __future__ import annotations
-
 import asyncio
 import datetime
 import json
