@@ -22,6 +22,7 @@ from nurolab.datasources.replay_source import SyntheticEEGSource
 from nurolab.processing.filters import stage_a_pipeline
 from nurolab.processing.windowing import SlidingWindowEngine
 from nurolab.processing.features import extract_feature_vector, build_feature_names
+from nurolab.processing.feature_exporter import export_features
 
 # Blink remover lives in nurolab/data/processing/ (your original file)
 _BLINK_PATH = PROJECT_ROOT / "nurolab" / "data" / "processing"
@@ -65,6 +66,8 @@ def run_bdf_stream(data_dir: Path):
         file_blinks    = 0
         chunk_idx      = 0
 
+        file_feature_vectors = []
+
         while True:
             raw_chunk = src.read_chunk(CHUNK_SIZE)
             if raw_chunk is None:
@@ -90,11 +93,29 @@ def run_bdf_stream(data_dir: Path):
                 fv         = extract_feature_vector(filtered, fs)
                 print(f"   [WINDOW ENGINE] {win_start:.1f}s–{win_end:.1f}s | "
                       f"Features: {len(fv)} | Ch0 Alpha DE: {fv[3]:.2f}")
+
+                file_feature_vectors.append(fv.tolist() if isinstance(fv, np.ndarray) else list(fv))
+                
                 total_windows  += 1
                 cleaned_buffer  = cleaned_buffer[step_samples:, :]
 
         total_blinks += file_blinks
         print(f"\n[{bdf_path.name}] Blinks: {file_blinks}")
+
+        if file_feature_vectors:
+            metadata = {
+                "source_file": bdf_path.name,
+                "sampling_rate": fs,
+                "window_size_sec": WINDOW_SEC,
+                "stride_sec": STRIDE_SEC,
+                "channel_names": src.channel_names
+            }
+            export_features(
+                feature_vectors=file_feature_vectors,
+                feature_names=feature_names,
+                metadata=metadata,
+                filename_prefix=f"{bdf_path.stem}_features"
+            )
 
     print("\n" + "=" * 60)
     print(f"Done. Blinks: {total_blinks} | Windows: {total_windows}")
@@ -108,13 +129,35 @@ def run_synthetic_stream():
     src    = SyntheticEEGSource(n_channels=8, fs=256.0,
                                 channel_names=["Fp1","Fp2","F3","F4","T7","T8","O1","O2"])
     engine = SlidingWindowEngine(src, window_sec=WINDOW_SEC, stride_sec=STRIDE_SEC)
+
+    feature_names = build_feature_names(src.channel_names)
+    synthetic_feature_vectors = []
+    
     for i, (window, meta) in enumerate(engine.windows()):
         fv = extract_feature_vector(stage_a_pipeline(window, src.sample_rate), src.sample_rate)
         print(f"   [WINDOW ENGINE] {meta['window_start_time']:.1f}s–{meta['window_end_time']:.1f}s | "
               f"Features: {len(fv)} | Fp1 alpha DE: {fv[3]:.2f}")
+
+        synthetic_feature_vectors.append(fv.tolist() if isinstance(fv, np.ndarray) else list(fv))
+        
         if i >= 9:
             print("... (stopping after 10 windows)")
             break
+
+    if synthetic_feature_vectors:
+        metadata = {
+            "source_file": "synthetic_live_stream",
+            "sampling_rate": src.sample_rate,
+            "window_size_sec": WINDOW_SEC,
+            "stride_sec": STRIDE_SEC,
+            "channel_names": src.channel_names
+        }
+        export_features(
+            feature_vectors=synthetic_feature_vectors,
+            feature_names=feature_names,
+            metadata=metadata,
+            filename_prefix="synthetic_run_features"
+        )
 
 
 if __name__ == "__main__":
