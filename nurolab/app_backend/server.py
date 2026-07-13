@@ -1,3 +1,4 @@
+from __future__ import annotations
 # File: nurolab/app_backend/server.py
 # NuroLab Dashboard Backend — FastAPI + WebSocket + SQLite
 #
@@ -7,11 +8,7 @@
 # Install: pip install -r requirements.txt
 # See README.md for full setup instructions.
 
-from __future__ import annotations
-from nurolab.processing.analytics import (
-    alpha_beta_ratio, engagement_index, relaxation_index,
-    cognitive_load_index, signal_quality_score
-)
+
 import asyncio
 import datetime
 import json
@@ -25,6 +22,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session as ORMSession
 
@@ -49,6 +47,7 @@ from nurolab.app_backend.eeg.streaming import SimulatedEEGSource, eeg_producer
 from nurolab.app_backend.eeg.preprocessing import preprocess_pipeline
 from nurolab.app_backend.ml.model_registry import ModelRegistry
 from nurolab.app_backend.ml.clinical_registry import ClinicalModelRegistry
+from nurolab.app_backend.report_generator import generate_report
 
 MODELS_STORE_DIR = Path(__file__).resolve().parent / "models_store"
 CLINICAL_MODELS_DIR = Path(__file__).resolve().parent / "clinical_models"
@@ -418,3 +417,14 @@ async def root():
         "docs": "/docs",
         "websocket": "/ws/live",
     }
+@app.post("/report/generate")
+async def generate_report_endpoint(session_data: dict):
+    pdf_bytes = generate_report(session_data)
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "attachment; filename=nurolab_report.pdf"
+        },
+    )
