@@ -12,6 +12,8 @@ from nurolab.processing.analytics import (
     alpha_beta_ratio, engagement_index, relaxation_index,
     cognitive_load_index, signal_quality_score
 )
+from fastapi.responses import Response
+from nurolab.app_backend.report_generator import generate_report
 import asyncio
 import datetime
 import json
