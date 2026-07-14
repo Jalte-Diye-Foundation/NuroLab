@@ -14,8 +14,8 @@ from scipy import signal
 def bandpass_filter(
     data: np.ndarray,
     fs: float,
-    low_hz: float = 1.0,
-    high_hz: float = 45.0,
+    low_hz: float = 0.1,
+    high_hz: float = 70.0,
     order: int = 4,
 ) -> np.ndarray:
     """Zero-phase Butterworth bandpass filter.
@@ -91,10 +91,14 @@ def preprocess_pipeline(
     data: np.ndarray,
     fs: float,
     mains_hz: float = 50.0,
-    band: tuple[float, float] = (1.0, 45.0),
+    band: tuple[float, float] = (0.1, 70.0),
 ) -> np.ndarray:
-    """Full Stage-A preprocessing chain: notch -> bandpass -> normalize."""
-    x = notch_filter(data, fs, freq_hz=mains_hz)
-    x = bandpass_filter(x, fs, low_hz=band[0], high_hz=band[1])
+    """Full Stage-A preprocessing chain: bandpass -> notch -> normalize.
+
+    Matches the training pipeline (filters.py) range and order exactly,
+    so live and training data are processed identically.
+    """
+    x = bandpass_filter(data, fs, low_hz=band[0], high_hz=band[1])
+    x = notch_filter(x, fs, freq_hz=mains_hz)
     x = normalize(x, method="zscore")
     return x
