@@ -161,3 +161,19 @@ class ClinicalModelsStatusResponse(BaseModel):
     epilepsy: ClinicalModelInfo
     depression: ClinicalModelInfo
 
+
+# ── Hardware headset ingestion status ───────────────────────────────────────
+
+class HardwareStatusResponse(BaseModel):
+    connected: bool
+    last_seen_seconds_ago: Optional[float] = None
+    reported_fs: Optional[float] = None
+    reported_gain: Optional[float] = None
+    reported_unit: Optional[str] = None
+    last_seq: Optional[int] = None
+    packets_received: int
+    channels_seen: List[str]
+    expected_channels: List[str]
+    unexpected_channels: List[str]
+
+
