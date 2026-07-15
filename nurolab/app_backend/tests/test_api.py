@@ -271,3 +271,82 @@ def test_predict_depression_reliability_warning_always_present(client):
     body = resp.json()
     assert body["reliability_warning"] is not None
 
+
+# ── Hardware headset ingestion ───────────────────────────────────────────────
+
+def test_hardware_status_disconnected_by_default(client):
+    resp = client.get("/hardware/status")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["connected"] is False
+    assert body["packets_received"] == 0
+    assert set(body["expected_channels"]) == {"Fp1", "Fp2", "F3", "F4", "T7", "T8", "O1", "O2"}
+
+
+def test_ws_live_defaults_to_simulated(client):
+    with client.websocket_connect("/ws/live?user_id=simtest") as websocket:
+        data = websocket.receive_json()
+        assert data["data_source"] == "simulated"
+        assert "epilepsy" not in data  # only appears with real headset data
+
+
+def test_headset_ingest_accepts_valid_packet_and_acks(client):
+    import random
+    random.seed(7)
+    channels = ["Fp1", "Fp2", "F3", "F4", "T7", "T8", "O1", "O2"]
+    packet = {
+        "seq": 1,
+        "timestamp_ms": 1720000000000,
+        "fs": 250,
+        "gain": 24,
+        "unit": "uV",
+        "channels": {ch: [random.gauss(0, 10) for _ in range(250)] for ch in channels},
+    }
+    with client.websocket_connect("/ws/ingest/headset") as ws:
+        ws.send_text(__import__("json").dumps(packet))
+        ack = ws.receive_json()
+        assert ack["ack"] is True
+        assert ack["seq"] == 1
+
+    status = client.get("/hardware/status").json()
+    assert status["connected"] is True
+    assert status["packets_received"] == 1
+    assert status["reported_fs"] == 250
+
+
+def test_headset_ingest_rejects_malformed_packet(client):
+    with client.websocket_connect("/ws/ingest/headset") as ws:
+        ws.send_text(__import__("json").dumps({"seq": 1}))  # missing 'channels' and 'fs'
+        ack = ws.receive_json()
+        assert ack["ack"] is False
+        assert "error" in ack
+
+
+def test_ws_live_switches_to_live_headset_after_enough_packets(client):
+    import random
+    random.seed(8)
+    channels = ["Fp1", "Fp2", "F3", "F4", "T7", "T8", "O1", "O2"]
+
+    def make_packet(seq):
+        return {
+            "seq": seq,
+            "timestamp_ms": 1720000000000 + seq * 1000,
+            "fs": 250,
+            "gain": 24,
+            "unit": "uV",
+            "channels": {ch: [random.gauss(0, 10) for _ in range(250)] for ch in channels},
+        }
+
+    # window_sec=2.0 at fs=250 needs >=500 samples/channel -> at least 2 one-second packets.
+    with client.websocket_connect("/ws/ingest/headset") as ws:
+        for seq in range(3):
+            ws.send_text(__import__("json").dumps(make_packet(seq)))
+            ws.receive_json()
+
+    with client.websocket_connect("/ws/live?user_id=hwlivetest") as ws:
+        data = ws.receive_json()
+        assert data["data_source"] == "live_headset"
+        assert "epilepsy" in data
+        assert data["epilepsy"]["predicted_label"] in {"normal", "interictal", "seizure"}
+
+
