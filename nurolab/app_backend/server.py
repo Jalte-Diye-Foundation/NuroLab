@@ -451,6 +451,29 @@ async def predict_depression(payload: DepressionPredictRequest):
         missing_channels=missing,
         reliability_warning=warning,
     )
+    # ── POST /report/generate ───────────────────────────────────────────────────
+
+@app.post("/report/generate")
+async def generate_report_endpoint(session_data: dict):
+    """Generates a downloadable PDF summary for a completed session."""
+    pdf_bytes = generate_report(session_data)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=nurolab_report.pdf"},
+    )
+
+# ── POST /report/generate ───────────────────────────────────────────────────
+
+@app.post("/report/generate")
+async def generate_report_endpoint(session_data: dict):
+    """Generates a downloadable PDF summary for a completed session."""
+    pdf_bytes = generate_report(session_data)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=nurolab_report.pdf"},
+    )
 
 
 # ── Root ─────────────────────────────────────────────────────────────────────
