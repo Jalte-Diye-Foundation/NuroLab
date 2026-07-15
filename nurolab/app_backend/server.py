@@ -99,7 +99,6 @@ CLINICAL_MODELS = ClinicalModelRegistry({
 })
 
 # ── Data source for the live websocket stream ───────────────────────────────
-#
 # Swap SimulatedEEGSource -> HardwareEEGSource (see eeg/streaming.py) to
 # switch to real hardware. No other code in this file needs to change.
 EEG_SOURCE = SimulatedEEGSource(n_channels=8, window_sec=2.0)
