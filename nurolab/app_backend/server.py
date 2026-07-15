@@ -41,6 +41,7 @@ from nurolab.app_backend.models.schemas import (
     ClinicalPredictResponse,
     DepressionPredictRequest,
     EpilepsyPredictRequest,
+    HardwareStatusResponse,
     HealthResponse,
     SaveSessionRequest,
     SaveSessionResponse,
@@ -48,6 +49,7 @@ from nurolab.app_backend.models.schemas import (
 )
 from nurolab.app_backend.services import baseline_service, analytics_service, prediction_service, session_service
 from nurolab.app_backend.eeg.streaming import SimulatedEEGSource, eeg_producer
+from nurolab.app_backend.eeg.headset_ingest import HeadsetIngestBuffer
 from nurolab.app_backend.eeg.preprocessing import preprocess_pipeline
 from nurolab.app_backend.ml.model_registry import ModelRegistry
 from nurolab.app_backend.ml.clinical_registry import ClinicalModelRegistry
@@ -100,8 +102,11 @@ CLINICAL_MODELS = ClinicalModelRegistry({
 #
 # Swap SimulatedEEGSource -> HardwareEEGSource (see eeg/streaming.py) to
 # switch to real hardware. No other code in this file needs to change.
-EEG_SOURCE = SimulatedEEGSource(n_channels=8, fs=256.0, window_sec=2.0)
-
+EEG_SOURCE = SimulatedEEGSource(n_channels=8, window_sec=2.0)
+HEADSET_BUFFER = HeadsetIngestBuffer(
+    expected_channels=EEG_SOURCE.channel_names,
+    window_sec=EEG_SOURCE.window_sec,
+)
 
 # ── GET /health ──────────────────────────────────────────────────────────────
 
@@ -235,15 +240,13 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# ── WEBSOCKET /ws/live ───────────────────────────────────────────────────────
-
 @app.websocket("/ws/live")
 async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
-    """Streams simulated live EEG-derived metrics every ~2 seconds.
+    """Streams live EEG-derived metrics every ~2 seconds.
 
-    Query param `user_id` (e.g. ws://host/ws/live?user_id=abc) is used to
-    look up that user's baseline, if one exists, for deviation scoring.
-    Falls back to a neutral synthetic baseline if the user hasn't calibrated.
+    Uses real headset data when available (HEADSET_BUFFER has a recent
+    window), falls back to simulated data otherwise. Query param `user_id`
+    is used to look up that user's baseline for deviation scoring.
     """
     await manager.connect(websocket)
 
@@ -253,8 +256,18 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
 
         async for window in eeg_producer(EEG_SOURCE, interval_sec=2.0):
             try:
-                filtered = preprocess_pipeline(window, EEG_SOURCE.fs)
-                de = analytics_service.compute_DE(filtered, EEG_SOURCE.fs)
+                live_window = HEADSET_BUFFER.get_latest_window()
+                if live_window is not None:
+                    channel_data, fs = live_window
+                    window_arr = np.stack([channel_data[ch] for ch in EEG_SOURCE.channel_names])
+                    data_source = "live_headset"
+                else:
+                    window_arr = window
+                    fs = EEG_SOURCE.fs
+                    data_source = "simulated"
+
+                filtered = preprocess_pipeline(window_arr, fs)
+                de = analytics_service.compute_DE(filtered, fs)
 
                 current = {"alpha": de["alpha_de"], "beta": de["beta_de"], "theta": de["theta_de"]}
                 extra_metrics = {
@@ -270,7 +283,6 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                 if baseline is not None:
                     deviation_score = analytics_service.compute_deviation(current, baseline)
                 else:
-                    # No calibration yet: report a neutral low deviation.
                     deviation_score = 0.0
 
                 risk_tier = analytics_service.compute_risk(deviation_score)
@@ -285,19 +297,27 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     "theta_de": round(de["theta_de"], 4),
                     "deviation_score": deviation_score,
                     "risk_tier": risk_tier,
+                    "data_source": data_source,
                     **extra_metrics,
                     **predictions,
                 }
 
+                if data_source == "live_headset":
+                    epilepsy_model = CLINICAL_MODELS.get("epilepsy")
+                    if epilepsy_model is not None:
+                        single_channel = window_arr[0]
+                        fv, _ = epilepsy_model.build_feature_vector({"EEG1": single_channel}, fs)
+                        result = epilepsy_model.predict(fv)
+                        payload["epilepsy"] = {
+                            "predicted_label": result["predicted_label"],
+                            "probabilities": result["probabilities"],
+                        }
+
                 await websocket.send_text(json.dumps(payload))
 
             except (WebSocketDisconnect, RuntimeError):
-                # RuntimeError covers "Cannot call send once a close message
-                # has been sent" if disconnect races the send.
                 raise
             except Exception as exc:
-                # Don't kill the stream on a single bad window — log and
-                # send an error frame, then keep going.
                 logger.exception("Error processing EEG window: %s", exc)
                 try:
                     await websocket.send_text(json.dumps({"error": str(exc)}))
@@ -326,7 +346,31 @@ async def models_status():
         "models_store_dir": str(MODELS_STORE_DIR),
     }
 
+# ── GET /hardware/status ──────────────────────────────────────────────────
 
+@app.get("/hardware/status", response_model=HardwareStatusResponse)
+async def hardware_status():
+    """Reports whether a real headset is currently connected."""
+    return HardwareStatusResponse(**HEADSET_BUFFER.status())
+
+# ── WEBSOCKET /ws/ingest/headset ────────────────────────────────────────────
+
+@app.websocket("/ws/ingest/headset")
+async def ingest_headset(websocket: WebSocket):
+    """Real headset firmware pushes sample packets here."""
+    await websocket.accept()
+    try:
+        while True:
+            raw = await websocket.receive_text()
+            try:
+                packet = json.loads(raw)
+                HEADSET_BUFFER.push_packet(packet)
+                await websocket.send_text(json.dumps({"ack": True, "seq": packet.get("seq")}))
+            except (ValueError, json.JSONDecodeError) as e:
+                await websocket.send_text(json.dumps({"ack": False, "error": str(e)}))
+    except WebSocketDisconnect:
+        pass
+    
 # ── Clinical models: epilepsy / depression ──────────────────────────────────
 
 DEPRESSION_RELIABILITY_WARNING = (
