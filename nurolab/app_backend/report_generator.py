@@ -101,7 +101,19 @@ def generate_report(session_data: dict) -> bytes:
     story.append(Spacer(1, 0.5 * cm))
 
     # ── Wellness status ────────────────────────────────────────────────
-    risk_tier = int(session_data.get("risk_tier", 0))
+    risk_value = session_data.get("risk_tier", "low")
+
+    if isinstance(risk_value, str):
+        risk_map = {
+            "low": 0,
+            "mild": 1,
+            "moderate": 2,
+            "high": 3,
+        }
+        risk_tier = risk_map.get(risk_value.lower(), 0)
+    else:
+        risk_tier = int(risk_value)
+
     story.append(Paragraph("Overall Wellness Status", styles["Heading2"]))
     story.append(
         Paragraph(
