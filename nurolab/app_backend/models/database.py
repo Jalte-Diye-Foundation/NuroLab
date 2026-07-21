@@ -17,6 +17,8 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    JSON,
+
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session as ORMSession
 
@@ -71,6 +73,9 @@ class Baseline(Base):
 
     n_samples = Column(Integer, nullable=False)
     quality = Column(String(32), nullable=False, default="unknown")
+    
+    feature_vectors = Column(JSON, nullable=True)
+    feature_names = Column(JSON, nullable=True)
 
     created_at = Column(DateTime, default=utcnow, nullable=False)
 
