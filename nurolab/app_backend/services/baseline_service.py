@@ -38,8 +38,24 @@ def _quality_from_sample_count(n_samples: int) -> str:
     return "poor"
 
 
-def build_baseline(db: ORMSession, user_id: str, alpha: list[float], beta: list[float], theta: list[float]) -> Baseline:
-    """Compute stats and persist a new Baseline row for the user."""
+def build_baseline(
+    db: ORMSession,
+    user_id: str,
+    alpha: list[float],
+    beta: list[float],
+    theta: list[float],
+    feature_vectors: list[list[float]] | None = None,
+    feature_names: list[str] | None = None,
+) -> Baseline:
+    """Compute stats and persist a new Baseline row for the user.
+
+    feature_vectors/feature_names are optional — existing callers that only
+    pass alpha/beta/theta keep working exactly as before. When provided
+    (full feature vectors from calibration windows, matching what
+    extract_feature_vector() produces), they're stored raw so a
+    DeviationEngine can be rebuilt from them later — see
+    processing/deviation_engine.py.
+    """
     get_or_create_user(db, user_id)
     stats = calculate_statistics(alpha, beta, theta)
 
@@ -53,6 +69,8 @@ def build_baseline(db: ORMSession, user_id: str, alpha: list[float], beta: list[
         theta_std=stats["theta_std"],
         n_samples=stats["n_samples"],
         quality=stats["quality"],
+        feature_vectors=feature_vectors,
+        feature_names=feature_names,
     )
     db.add(baseline)
     db.commit()
@@ -66,4 +84,14 @@ def get_latest_baseline(db: ORMSession, user_id: str) -> Baseline | None:
         .filter(Baseline.user_id == user_id)
         .order_by(Baseline.created_at.desc())
         .first()
+    )
+
+
+def has_full_feature_baseline(baseline: Baseline | None) -> bool:
+    """True if this baseline has enough data to build a DeviationEngine
+    (not just the legacy 3-scalar alpha/beta/theta stats)."""
+    return (
+        baseline is not None
+        and baseline.feature_vectors is not None
+        and len(baseline.feature_vectors) >= 2  # need >=2 rows for a covariance matrix
     )
