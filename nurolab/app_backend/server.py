@@ -136,6 +136,8 @@ async def build_baseline(payload: BuildBaselineRequest, db: ORMSession = Depends
     try:
         baseline = baseline_service.build_baseline(
             db, payload.user_id, payload.alpha, payload.beta, payload.theta
+            feature_vectors=payload.feature_vectors,
+            feature_names=payload.feature_names,
         )
     except Exception as exc:
         logger.exception("Failed to build baseline for user %s", payload.user_id)
@@ -297,6 +299,7 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     "deviation_score": deviation_score,
                     "risk_tier": risk_tier,
                     "data_source": data_source,
+                    "feature_vector": full_feature_vector.tolist(),
                     **extra_metrics,
                     **predictions,
                 }
