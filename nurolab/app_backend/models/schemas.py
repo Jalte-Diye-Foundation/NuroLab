@@ -26,6 +26,8 @@ class BuildBaselineRequest(BaseModel):
     alpha: List[float] = Field(..., min_length=1)
     beta: List[float] = Field(..., min_length=1)
     theta: List[float] = Field(..., min_length=1)
+    feature_vectors: Optional[List[List[float]]] = None
+    feature_names: Optional[List[str]] = None
 
     @field_validator("beta")
     @classmethod
