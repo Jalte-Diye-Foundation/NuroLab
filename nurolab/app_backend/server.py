@@ -12,6 +12,9 @@ from nurolab.processing.analytics import (
     alpha_beta_ratio, engagement_index, relaxation_index,
     cognitive_load_index, signal_quality_score
 )
+from nurolab.processing.features import extract_feature_vector, build_feature_names
+from nurolab.processing.deviation_engine import DeviationEngine
+from nurolab.app_backend.services.baseline_service import has_full_feature_baseline
 from fastapi.responses import Response
 from nurolab.app_backend.report_generator import generate_report
 import asyncio
@@ -135,9 +138,9 @@ async def health():
 async def build_baseline(payload: BuildBaselineRequest, db: ORMSession = Depends(get_db)):
     try:
         baseline = baseline_service.build_baseline(
-            db, payload.user_id, payload.alpha, payload.beta, payload.theta
-            feature_vectors=payload.feature_vectors,
-            feature_names=payload.feature_names,
+        db, payload.user_id, payload.alpha, payload.beta, payload.theta,
+        feature_vectors=payload.feature_vectors,
+        feature_names=payload.feature_names,
         )
     except Exception as exc:
         logger.exception("Failed to build baseline for user %s", payload.user_id)
@@ -163,6 +166,15 @@ async def build_baseline(payload: BuildBaselineRequest, db: ORMSession = Depends
 @app.get("/calibration/status/{user_id}", response_model=CalibrationStatusResponse)
 async def calibration_status(user_id: str, db: ORMSession = Depends(get_db)):
     baseline = baseline_service.get_latest_baseline(db, user_id)
+    # Stage 3: build a DeviationEngine once per session, if this user has
+    # a full-feature baseline. Kept as a local variable so its CUSUM state
+    # persists for this connection's lifetime, and is automatically cleaned
+    # up when the connection closes — no session registry needed.
+    deviation_engine = None
+    if has_full_feature_baseline(baseline):
+        baseline_X = np.array(baseline.feature_vectors, dtype=float)
+        deviation_engine = DeviationEngine(baseline_X, baseline.feature_names)
+        logger.info("DeviationEngine built for user %s from %d calibration windows", user_id, len(baseline_X))
     if baseline is None:
         return CalibrationStatusResponse(calibrated=False, samples=0, quality="none", created_at=None)
 
@@ -254,7 +266,11 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
     db = SessionLocal()
     try:
         baseline = baseline_service.get_latest_baseline(db, user_id)
-
+        deviation_engine = None
+        if has_full_feature_baseline(baseline):
+            baseline_X = np.array(baseline.feature_vectors, dtype=float)
+            deviation_engine = DeviationEngine(baseline_X, baseline.feature_names)
+            logger.info("DeviationEngine built for user %s from %d calibration windows", user_id, len(baseline_X))
         async for window in eeg_producer(EEG_SOURCE, interval_sec=2.0):
             try:
                 live_window = HEADSET_BUFFER.get_latest_window()
@@ -268,6 +284,11 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     data_source = "simulated"
 
                 filtered = preprocess_pipeline(window_arr, fs)
+                # Full feature vector for the DeviationEngine (Stage 2) — kept server-side
+                # only, not sent to the app. extract_feature_vector expects
+                # (n_samples, n_channels), but our pipeline uses (n_channels, n_samples)
+                # everywhere else, hence the transpose.
+                full_feature_vector = extract_feature_vector(filtered.T, fs)
                 de = analytics_service.compute_DE(filtered, fs)
 
                 current = {"alpha": de["alpha_de"], "beta": de["beta_de"], "theta": de["theta_de"]}
@@ -314,7 +335,9 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                             "predicted_label": result["predicted_label"],
                             "probabilities": result["probabilities"],
                         }
-
+                if deviation_engine is not None:
+                    mahalanobis_result = deviation_engine.evaluate(full_feature_vector)
+                    payload["mahalanobis_deviation"] = mahalanobis_result
                 await websocket.send_text(json.dumps(payload))
 
             except (WebSocketDisconnect, RuntimeError):
@@ -455,6 +478,18 @@ async def predict_depression(payload: DepressionPredictRequest):
         reliability_warning=warning,
     )
     # ── POST /report/generate ───────────────────────────────────────────────────
+
+@app.post("/report/generate")
+async def generate_report_endpoint(session_data: dict):
+    """Generates a downloadable PDF summary for a completed session."""
+    pdf_bytes = generate_report(session_data)
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": "attachment; filename=nurolab_report.pdf"},
+    )
+
+# ── POST /report/generate ───────────────────────────────────────────────────
 
 @app.post("/report/generate")
 async def generate_report_endpoint(session_data: dict):
