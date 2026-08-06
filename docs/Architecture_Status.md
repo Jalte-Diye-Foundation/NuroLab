@@ -1,6 +1,6 @@
-# NuroLab — Architecture & Status
+# NuroLab - Architecture & Status
 
-Last updated: today, reflects everything built and tested so far.
+Reflects everything built and tested so far.
 
 
 ## 1. What's LIVE right now (in the real-time /ws/live stream)
