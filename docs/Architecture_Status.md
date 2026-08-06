@@ -7,17 +7,17 @@ Reflects everything built and tested so far.
 
 Every ~2 seconds, connected clients receive:
 
-- `alpha_de, beta_de, theta_de, delta_de, gamma_de` — all 5 EEG band powers
+- `alpha_de, beta_de, theta_de, delta_de, gamma_de` - all 5 EEG band powers
 - `alpha_beta_ratio, engagement_index, relaxation_index, cognitive_load, signal_quality`
-- `deviation_score, risk_tier` — z-score deviation from personal baseline
+- `deviation_score, risk_tier` - z-score deviation from personal baseline
 - `stress_prediction, attention_prediction, fatigue_prediction`
-- `data_source` — "simulated" or "live_headset"
-- `feature_vector` — full 64-length feature vector (8ch x 8 features), used for the deviation engine
-- `epilepsy` — only present when `data_source == "live_headset"`
-- `mahalanobis_deviation` — only present when the connected user has a full-feature baseline (see Section 3)
+- `data_source` - "simulated" or "live_headset"
+- `feature_vector` - full 64-length feature vector (8ch x 8 features), used for the deviation engine
+- `epilepsy` - only present when `data_source == "live_headset"`
+- `mahalanobis_deviation` - only present when the connected user has a full-feature baseline (see Section 3)
 
 
-## 2. Backend — all working endpoints
+## 2. Backend - all working endpoints
 
 Health check, calibration (build + status), session (save + history),
 live WebSocket stream, hardware status + ingestion WebSocket, model
@@ -25,21 +25,21 @@ status, clinical model status + predictions (epilepsy/depression), PDF
 report generation. Full list and exact paths in `nurolab/README.md`.
 
 
-## 3. Mahalanobis deviation engine — built, tested, NOT yet default
+## 3. Mahalanobis deviation engine - built, tested, NOT yet default
 
 **Status:** all 4 build stages complete and merged. Proven to catch a
 real, specific anomaly (one channel, consistent across 10+ windows) that
 the current z-score method structurally can't isolate.
 
 **Why it's not live yet:** tested against a single ~3-minute recording,
-covariance rank coverage is only ~20% of the feature space — genuinely
+covariance rank coverage is only ~20% of the feature space - genuinely
 promising, not yet enough calibration data for full production
 reliability. Currently runs as an additional field (`mahalanobis_deviation`)
 alongside the existing method, not replacing it.
 
 **What would make it production-ready:** either combine multiple real
 recordings for a larger calibration set, or formalize the DE-only
-feature reduction (320→200 features) as the permanent approach — both
+feature reduction (320→200 features) as the permanent approach - both
 meaningfully improved rank coverage and numerical stability in testing.
 
 
@@ -58,7 +58,7 @@ not 256).
 | Model | Accuracy | Status |
 |---|---|---|
 | Epilepsy | ~89% | Production-usable, still recommend validating on your own data |
-| Depression | ~38% (7 subjects) | Experimental only — reliability_warning always present |
+| Depression | ~38% (7 subjects) | Experimental only - reliability_warning always present |
 | Stress/attention/fatigue | heuristic fallback if no `.pkl` present | Functional |
 
 
@@ -67,7 +67,7 @@ not 256).
 Real headset firmware pushes to `/ws/ingest/headset`. `/ws/live`
 automatically prefers real data over simulated once enough real
 samples arrive (checked via `/hardware/status`). Physical headset
-itself still in procurement — software side fully ready.
+itself still in procurement - software side fully ready.
 
 
 ## 7. Flutter mobile app
@@ -81,7 +81,7 @@ phone.
 
 ## 8. What's next (not started)
 
-- **Cognitive fatigue trend tracking** — watching `cognitive_load`
+- **Cognitive fatigue trend tracking** - watching `cognitive_load`
   (already computed, = theta/alpha ratio) over the course of a session
   to detect a genuine rising trend, not just a point-in-time value
 - Public backend deployment (currently local-only)
