@@ -17,6 +17,7 @@ from nurolab.processing.deviation_engine import DeviationEngine
 from nurolab.app_backend.services.baseline_service import has_full_feature_baseline
 from fastapi.responses import Response
 from nurolab.app_backend.report_generator import generate_report
+from nurolab.app_backend.services.fatigue_trend_service import FatigueTrendTracker
 import asyncio
 import datetime
 import json
@@ -185,7 +186,9 @@ async def calibration_status(user_id: str, db: ORMSession = Depends(get_db)):
         created_at=baseline.created_at,
     )
 
-
+# One tracker per session — same local-variable lifecycle pattern as
+# deviation_engine above, naturally created/destroyed per connection.
+fatigue_tracker = FatigueTrendTracker()
 # ── POST /session/save ──────────────────────────────────────────────────────
 
 @app.post("/session/save", response_model=SaveSessionResponse)
@@ -301,6 +304,7 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     "cognitive_load": round(cognitive_load_index(de["theta_de"], de["alpha_de"]), 4),
                     "signal_quality": round(signal_quality_score(filtered), 4),
                 }
+                fatigue_status = fatigue_tracker.add_reading(extra_metrics["cognitive_load"])
 
                 if baseline is not None:
                     deviation_score = analytics_service.compute_deviation(current, baseline)
@@ -324,6 +328,7 @@ async def live_stream(websocket: WebSocket, user_id: str = "anonymous"):
                     **extra_metrics,
                     **predictions,
                 }
+                payload["fatigue_trend"] = fatigue_status
 
                 if data_source == "live_headset":
                     epilepsy_model = CLINICAL_MODELS.get("epilepsy")
