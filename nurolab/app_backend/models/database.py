@@ -2,10 +2,17 @@
 # SQLAlchemy ORM models + engine/session setup for NuroLab.
 #
 # Tables: User, Baseline, Session, Prediction, Analytics
+#
+# Database selection: reads DATABASE_URL from the environment. If it's
+# not set (local development), falls back to the existing local SQLite
+# file — nothing changes for local dev. In production (Render/Railway/etc),
+# set DATABASE_URL to your Postgres connection string and this switches
+# over automatically, with no code changes needed.
 
 from __future__ import annotations
 
 import datetime
+import os
 from pathlib import Path
 
 from sqlalchemy import (
@@ -18,7 +25,6 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     JSON,
-
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, Session as ORMSession
 
@@ -26,11 +32,23 @@ STORAGE_DIR = Path(__file__).resolve().parent.parent / "storage"
 STORAGE_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = STORAGE_DIR / "nurolab.db"
 
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{DB_PATH}"
+# Local dev: no DATABASE_URL set -> SQLite file, exactly as before.
+# Production: DATABASE_URL set (Postgres) -> use that instead.
+SQLALCHEMY_DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
+# Some hosts (e.g. Render) give you a URL starting with "postgres://",
+# but SQLAlchemy 2.x requires "postgresql://" — normalize it here so
+# you don't have to remember to fix it manually every time.
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+IS_SQLITE = SQLALCHEMY_DATABASE_URL.startswith("sqlite")
+
+# check_same_thread is SQLite-specific — passing it to Postgres would
+# raise an error, so it's only included when actually using SQLite.
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},  # needed for SQLite + FastAPI's threaded workers
+    connect_args={"check_same_thread": False} if IS_SQLITE else {},
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -73,7 +91,7 @@ class Baseline(Base):
 
     n_samples = Column(Integer, nullable=False)
     quality = Column(String(32), nullable=False, default="unknown")
-    
+
     feature_vectors = Column(JSON, nullable=True)
     feature_names = Column(JSON, nullable=True)
 
