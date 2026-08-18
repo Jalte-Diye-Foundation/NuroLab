@@ -6,12 +6,13 @@ __pycache__/
 venv/
 .env
 
-# Raw EEG data — too large + OpenNeuro license
+# Raw EEG data — too large
 nurolab/data/*.bdf
 nurolab/data/*.set
 nurolab/data/*.fdt
 nurolab/data/ds003478/
 nurolab/data/bonn_eeg/
+nurolab/data/adhd_eeg/
 
 # Keep these (small processing scripts, needed by pipeline)
 !nurolab/data/processing/
