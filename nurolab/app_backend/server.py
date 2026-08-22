@@ -100,6 +100,7 @@ MODELS_LOADED = True  # heuristic fallback always keeps the API functional
 CLINICAL_MODELS = ClinicalModelRegistry({
     "epilepsy": CLINICAL_MODELS_DIR / "nurolab_epilepsy_svm.pkl",
     "depression": CLINICAL_MODELS_DIR / "nurolab_depression_svm.pkl",
+    "adhd": CLINICAL_MODELS_DIR / "nurolab_adhd_svm.pkl",
 })
 
 # ── Data source for the live websocket stream ───────────────────────────────
@@ -427,10 +428,10 @@ def _clinical_model_info(name: str) -> ClinicalModelInfo:
 
 @app.get("/clinical/models/status", response_model=ClinicalModelsStatusResponse)
 async def clinical_models_status():
-    """Metadata for the clinical SVM models: accuracy, required channels, labels."""
     return ClinicalModelsStatusResponse(
         epilepsy=_clinical_model_info("epilepsy"),
         depression=_clinical_model_info("depression"),
+        adhd=_clinical_model_info("adhd"),
     )
 
 
@@ -481,6 +482,29 @@ async def predict_depression(payload: DepressionPredictRequest):
         probabilities=result["probabilities"],
         missing_channels=missing,
         reliability_warning=warning,
+    )
+
+
+@app.post("/clinical/predict/adhd", response_model=ClinicalPredictResponse)
+async def predict_adhd(payload: DepressionPredictRequest):
+    model = CLINICAL_MODELS.get("adhd")
+    if model is None:
+        raise HTTPException(status_code=503, detail="ADHD model is not loaded on this server.")
+
+    channel_data = {name: np.array(samples, dtype=float) for name, samples in payload.channels.items()}
+    try:
+        feature_vector, missing = model.build_feature_vector(channel_data, payload.fs)
+        result = model.predict(feature_vector)
+    except Exception as exc:
+        logger.exception("ADHD prediction failed")
+        raise HTTPException(status_code=400, detail=f"Prediction failed: {exc}") from exc
+
+    return ClinicalPredictResponse(
+        condition="adhd",
+        predicted_label=result["predicted_label"],
+        probabilities=result["probabilities"],
+        missing_channels=missing,
+        reliability_warning=None,
     )
     # ── POST /report/generate ───────────────────────────────────────────────────
 
