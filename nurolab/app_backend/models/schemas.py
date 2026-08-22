@@ -162,6 +162,7 @@ class ClinicalModelInfo(BaseModel):
 class ClinicalModelsStatusResponse(BaseModel):
     epilepsy: ClinicalModelInfo
     depression: ClinicalModelInfo
+    adhd: ClinicalModelInfo
 
 
 # ── Hardware headset ingestion status ───────────────────────────────────────
