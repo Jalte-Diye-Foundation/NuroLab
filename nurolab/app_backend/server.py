@@ -457,6 +457,32 @@ async def predict_epilepsy(payload: EpilepsyPredictRequest):
         reliability_warning=None,
     )
 
+@app.post("/clinical/predict/depression", response_model=ClinicalPredictResponse)
+async def predict_depression(payload: DepressionPredictRequest):
+    model = CLINICAL_MODELS.get("depression")
+    if model is None:
+        raise HTTPException(status_code=503, detail="Depression model is not loaded on this server.")
+
+    channel_data = {name: np.array(samples, dtype=float) for name, samples in payload.channels.items()}
+    try:
+        feature_vector, missing = model.build_feature_vector(channel_data, payload.fs)
+        result = model.predict(feature_vector)
+    except Exception as exc:
+        logger.exception("Depression prediction failed")
+        raise HTTPException(status_code=400, detail=f"Prediction failed: {exc}") from exc
+
+    warning = DEPRESSION_RELIABILITY_WARNING
+    if missing:
+        warning += f" Additionally, {len(missing)}/{len(model.required_channels)} required channels were missing and zero-filled, further reducing reliability."
+
+    return ClinicalPredictResponse(
+        condition="depression",
+        predicted_label=result["predicted_label"],
+        probabilities=result["probabilities"],
+        missing_channels=missing,
+        reliability_warning=warning,
+    )
+
 
 @app.post("/clinical/predict/adhd", response_model=ClinicalPredictResponse)
 async def predict_adhd(payload: DepressionPredictRequest):
@@ -477,7 +503,7 @@ async def predict_adhd(payload: DepressionPredictRequest):
         predicted_label=result["predicted_label"],
         probabilities=result["probabilities"],
         missing_channels=missing,
-        reliability_warning=None,  # genuinely strong result, no warning needed
+        reliability_warning=None,
     )
     # ── POST /report/generate ───────────────────────────────────────────────────
 
