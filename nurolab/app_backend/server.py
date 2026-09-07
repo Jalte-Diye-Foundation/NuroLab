@@ -19,6 +19,7 @@ from fastapi.responses import Response
 from nurolab.app_backend.report_generator import generate_report
 from nurolab.app_backend.services.fatigue_trend_service import FatigueTrendTracker
 from nurolab.app_backend.services.longitudinal_trend_service import analyze_trends
+from nurolab.app_backend.services.burnout_risk_service import compute_burnout_signal
 import asyncio
 import datetime
 import json
@@ -239,11 +240,12 @@ async def session_history(
     ]
 @app.get("/session/trends/{user_id}")
 async def session_trends(user_id: str, db: ORMSession = Depends(get_db)):
-    """Analyzes saved session history over time to detect longer-term
-    trends (days/weeks) — e.g. is stress consistently rising across
-    sessions, not just within one live connection."""
     records = session_service.get_history(db, user_id, limit=1000, offset=0, sort="asc")
-    return analyze_trends(records)
+    trends = analyze_trends(records)
+    return {
+        **trends,
+        "burnout_signal": compute_burnout_signal(trends),
+    }
 
 
 # ── WebSocket connection manager ────────────────────────────────────────────
